@@ -46,7 +46,7 @@ public :
 			else{
 				result.isPositive = n2.isPositive;	
 			}
-
+			//result.isPositive = (n1.getAbs() > n2.getAbs() ? n1.isPositive : n2.isPositive);
 			return result;
 		}
 
@@ -99,6 +99,52 @@ public :
 			result.num.pop_back();
 		}
 
+		return result;
+	}
+
+	friend const BigInteger operator*(const BigInteger& n1, const BigInteger& n2){
+		/*BigInteger result, greater, less;
+		greater = max(n1.getAbs(), n2.getAbs());
+		less = min(n1.getAbs(), n2.getAbs());
+		
+		for(int i=0; i<less; i++){
+			result = result + greater;
+		}
+		result.isPositive = (n1.isPositive == n2.isPositive ? true : false);
+
+		if(result.num.empty()) result = 0;
+		
+		return result;*/
+
+		BigInteger result;
+		
+		int carry = 0;
+		for(int i=0; i<n2.num.size(); i++){
+			carry = 0;
+			for(int j=0; j<n1.num.size(); j++){
+				int calc = n2.get(i) * n1.get(j) + carry;
+				carry = calc / 10;
+				if(i+j >= result.num.size()){
+					result.num.push_back(calc % 10);
+				}
+				else{
+					result.num[i+j] += calc % 10;
+					if(result.num[i+j] >= 10){
+						carry += result.num[i+j] / 10;
+						result.num[i+j] = result.num[i+j] % 10;
+					}
+				}
+			}
+			if(carry)
+				result.num.push_back(carry);
+		}
+
+		for(int i=result.num.size()-1; !result.num[i] && i>0; i--){
+			result.num.pop_back();
+		}
+
+		result.isPositive = (n1.isPositive == n2.isPositive ? true : false);
+		if(result.getAbs() == 0) result.isPositive = true;
 		return result;
 	}
 
@@ -168,6 +214,7 @@ void testRightGreater();
 void testRightGreaterEqual();
 void testSub();
 void testNotEqual();
+void testMul();
 
 int main() {
 	testAdd();
@@ -177,6 +224,8 @@ int main() {
 	testRightGreaterEqual();
 	testSub();
 	testNotEqual();
+	testMul();
+	
 }
 
 void testAdd(){
@@ -387,4 +436,50 @@ void testNotEqual(){
 
 	cout << (result1 == answer1) << endl;
 	cout << (result2 == answer2) << endl;
+}
+void testMul(){
+	BigInteger num1(13);
+	BigInteger num2(17);
+	BigInteger num3(-9);
+	BigInteger num4(-19);
+	BigInteger num5(999);
+	BigInteger num6(99);
+	BigInteger num7(1);
+	BigInteger num8(0);
+
+	vector<BigInteger> result;
+	result.push_back(num1 * num2);
+	result.push_back(num2 * num3);
+	result.push_back(num3 * num2);
+	result.push_back(num3 * num4);
+	result.push_back(num5 * num6);
+	result.push_back(num6 * num7); 
+	result.push_back(num4 * num7); 
+	result.push_back(num6 * num8); 
+	result.push_back(num8 * num4); 
+
+	vector<BigInteger> answer;
+	answer.push_back(221);
+	answer.push_back(-153);
+	answer.push_back(-153);
+	answer.push_back(171);
+	answer.push_back(98901);
+	answer.push_back(99);
+	answer.push_back(-19);
+	answer.push_back(0);
+	answer.push_back(0);
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]){
+			cout << true;
+		}
+		else{
+			cout << false << " // ";
+			cout << "actual : ";
+			result[i].print();
+			cout << ", expected : ";
+			answer[i].print();
+		}
+		cout << endl;
+	}
 }
