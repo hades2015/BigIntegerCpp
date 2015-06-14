@@ -39,14 +39,8 @@ public :
 		if(n1.isPositive != n2.isPositive){
 			first.isPositive = !first.isPositive;
 			result = first - second;
-
-			if(n1.getAbs() > n2.getAbs()){
-				result.isPositive = n1.isPositive;
-			}
-			else{
-				result.isPositive = n2.isPositive;	
-			}
-			//result.isPositive = (n1.getAbs() > n2.getAbs() ? n1.isPositive : n2.isPositive);
+			
+			result.isPositive = (n1.getAbs() > n2.getAbs() ? n1.isPositive : n2.isPositive);
 			return result;
 		}
 
@@ -148,6 +142,28 @@ public :
 		return result;
 	}
 
+	friend const BigInteger operator/(const BigInteger& n1, const BigInteger& n2){
+		try{
+			if(n2 == 0){
+				throw n2;
+			}
+			BigInteger result(0);
+			BigInteger dividend(n1.getAbs()), divisor(n2.getAbs());
+
+			while(dividend >= divisor){
+				dividend = dividend - divisor;
+				result = result + 1;
+			}
+
+			result.isPositive = (n1.isPositive == n2.isPositive) ? true : false;
+			return result;
+		}
+		catch(const BigInteger& num){
+			cout << "ArithmeticException" << endl;
+			return -999999;
+		}
+	}
+
 	void print() {
 		if(!isPositive) cout <<"-";
 		for (int i = num.size() - 1; i >= 0; --i)
@@ -215,17 +231,18 @@ void testRightGreaterEqual();
 void testSub();
 void testNotEqual();
 void testMul();
+void testDiv();
 
 int main() {
-	testAdd();
+	/*testAdd();
 	testLeftGreater();
 	testLeftGreaterEqual();
 	testRightGreater();
 	testRightGreaterEqual();
 	testSub();
 	testNotEqual();
-	testMul();
-	
+	testMul();*/
+	testDiv();
 }
 
 void testAdd(){
@@ -468,6 +485,49 @@ void testMul(){
 	answer.push_back(-19);
 	answer.push_back(0);
 	answer.push_back(0);
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]){
+			cout << true;
+		}
+		else{
+			cout << false << " // ";
+			cout << "actual : ";
+			result[i].print();
+			cout << ", expected : ";
+			answer[i].print();
+		}
+		cout << endl;
+	}
+}
+void testDiv(){
+	BigInteger num1(12);
+	BigInteger num2(3);
+	BigInteger num3(24);
+	BigInteger num4(5);
+	BigInteger num5(-4);
+	BigInteger num6(-34);
+	BigInteger num7(0);
+
+	vector<BigInteger> result;
+	result.push_back(num1 / num2);
+	result.push_back(num1 / num3);
+	result.push_back(num1 / num4);
+	result.push_back(num1 / num5);
+	result.push_back(num6 / num4);
+	result.push_back(num6 / num5);
+	result.push_back(num5 / num6);
+	result.push_back(num1 / num7); // ArithmeticException
+
+	vector<BigInteger> answer;
+	answer.push_back(4);
+	answer.push_back(0);
+	answer.push_back(2);
+	answer.push_back(-3);
+	answer.push_back(-6);
+	answer.push_back(8);
+	answer.push_back(0);
+	answer.push_back(-999999); // ArithmeticException
 
 	for(size_t i=0; i<result.size(); i++){
 		if(result[i] == answer[i]){
