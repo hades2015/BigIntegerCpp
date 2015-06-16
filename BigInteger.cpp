@@ -102,7 +102,7 @@ public :
 		less = min(n1.getAbs(), n2.getAbs());
 
 		for(int i=0; i<less; i++){
-		result = result + greater;
+			result = result + greater;
 		}
 		result.isPositive = (n1.isPositive == n2.isPositive ? true : false);
 
@@ -145,7 +145,7 @@ public :
 	friend const BigInteger operator/(const BigInteger& n1, const BigInteger& n2){
 		try{
 			if(n2 == 0){
-				throw n2;
+				throw "ArithmeticException";
 			}
 			BigInteger result(0);
 			BigInteger dividend(n1.getAbs()), divisor(n2.getAbs());
@@ -158,9 +158,28 @@ public :
 			result.isPositive = (n1.isPositive == n2.isPositive) ? true : false;
 			return result;
 		}
-		catch(const BigInteger& num){
-			cout << "ArithmeticException" << endl;
+		catch(const char* e){
+			cout << e << endl;
 			return -999999;
+		}
+	}
+
+	friend const BigInteger operator%(const BigInteger& n1, const BigInteger& n2){
+		try{
+			if(n2 == 0){
+				throw "ArithmeticException";
+			}
+
+			BigInteger result, share;
+		
+			share = n1 / n2;
+			result = n1 - share * n2;
+
+			return result;
+		}
+		catch(const char* e){
+			cout << e << endl;
+			return -99999;
 		}
 	}
 
@@ -213,7 +232,7 @@ public :
 
 	friend const BigInteger operator<<(const BigInteger& srcNum, const BigInteger& shiftCount){
 		try{
-			if(shiftCount < 0) throw shiftCount;
+			if(shiftCount < 0) throw "shiftCount is not positive" ;
 			BigInteger result(srcNum);
 
 			for(int i=0; i<shiftCount; i++){
@@ -222,15 +241,15 @@ public :
 
 			return result;
 		}
-		catch(const BigInteger& num){
-			cout << "shiftCount is not positive" << endl;
+		catch(const char* e){
+			cout << e << endl;
 			return -99999;
 		}
 	}
 
 	friend const BigInteger operator>>(const BigInteger& srcNum, const BigInteger& shiftCount){
 		try{
-			if(shiftCount < 0) throw shiftCount;
+			if(shiftCount < 0) throw "shiftCount is not positive";
 			BigInteger result(srcNum);
 
 			for(int i=0; i<shiftCount; i++){
@@ -240,8 +259,8 @@ public :
 
 			return result;
 		}
-		catch(const BigInteger& num){
-			cout << "shiftCount is not positive" << endl;
+		catch(const char* e){
+			cout << e << endl;
 			return -99999;
 		}
 	}
@@ -269,9 +288,10 @@ void testMul();
 void testDiv();
 void testLeftShift();
 void testRightShift();
+void testMod();
 
 int main() {
-	/*testAdd();
+	testAdd();
 	testLeftGreater();
 	testLeftGreaterEqual();
 	testRightGreater();
@@ -279,9 +299,10 @@ int main() {
 	testSub();
 	testNotEqual();
 	testMul();
-	testDiv();*/
+	testDiv();
 	testLeftShift();
 	testRightShift();
+	testMod();
 }
 
 void testAdd(){
@@ -635,6 +656,42 @@ void testRightShift(){
 	answer.push_back(0);
 	answer.push_back(-1);
 
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]) cout << true;
+		else{
+			cout << false << " // ";
+			cout << "actual : ";
+			result[i].print();
+			cout << ", expected : ";
+			answer[i].print();
+		}
+		cout << endl;
+	}
+}
+void testMod(){
+	BigInteger num1(14);
+	BigInteger num2(3);
+	BigInteger num3(27);
+	BigInteger num4(-4);
+	BigInteger num5(0);
+	BigInteger num6(-43);
+
+	vector<BigInteger> result;
+	result.push_back(num1 % num2);
+	result.push_back(num3 % num4);
+	result.push_back(num3 % num5);
+	result.push_back(num6 % num2);
+	result.push_back(num6 % num4);
+	result.push_back(num3 % num2);
+
+	vector<BigInteger> answer;
+	answer.push_back(2);
+	answer.push_back(3);
+	answer.push_back(-99999);
+	answer.push_back(-1);
+	answer.push_back(-3);
+	answer.push_back(0);
 
 	for(size_t i=0; i<result.size(); i++){
 		if(result[i] == answer[i]) cout << true;
