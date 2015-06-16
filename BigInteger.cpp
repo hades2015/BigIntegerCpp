@@ -39,7 +39,7 @@ public :
 		if(n1.isPositive != n2.isPositive){
 			first.isPositive = !first.isPositive;
 			result = first - second;
-			
+
 			result.isPositive = (n1.getAbs() > n2.getAbs() ? n1.isPositive : n2.isPositive);
 			return result;
 		}
@@ -100,18 +100,18 @@ public :
 		/*BigInteger result, greater, less;
 		greater = max(n1.getAbs(), n2.getAbs());
 		less = min(n1.getAbs(), n2.getAbs());
-		
+
 		for(int i=0; i<less; i++){
-			result = result + greater;
+		result = result + greater;
 		}
 		result.isPositive = (n1.isPositive == n2.isPositive ? true : false);
 
 		if(result.num.empty()) result = 0;
-		
+
 		return result;*/
 
 		BigInteger result;
-		
+
 		int carry = 0;
 		for(int i=0; i<n2.num.size(); i++){
 			carry = 0;
@@ -211,6 +211,41 @@ public :
 		return !(left.isPositive == right.isPositive && left.num == right.num);
 	}
 
+	friend const BigInteger operator<<(const BigInteger& srcNum, const BigInteger& shiftCount){
+		try{
+			if(shiftCount < 0) throw shiftCount;
+			BigInteger result(srcNum);
+
+			for(int i=0; i<shiftCount; i++){
+				result = result * 2;
+			}
+
+			return result;
+		}
+		catch(const BigInteger& num){
+			cout << "shiftCount is not positive" << endl;
+			return -99999;
+		}
+	}
+
+	friend const BigInteger operator>>(const BigInteger& srcNum, const BigInteger& shiftCount){
+		try{
+			if(shiftCount < 0) throw shiftCount;
+			BigInteger result(srcNum);
+
+			for(int i=0; i<shiftCount; i++){
+				if(srcNum < 0 && result.num[0] & 1) result = result - 1;
+				result = result / 2;
+			}
+
+			return result;
+		}
+		catch(const BigInteger& num){
+			cout << "shiftCount is not positive" << endl;
+			return -99999;
+		}
+	}
+
 	const BigInteger getAbs() const{
 		BigInteger result(*this);
 		result.isPositive = true;
@@ -232,6 +267,8 @@ void testSub();
 void testNotEqual();
 void testMul();
 void testDiv();
+void testLeftShift();
+void testRightShift();
 
 int main() {
 	/*testAdd();
@@ -241,8 +278,10 @@ int main() {
 	testRightGreaterEqual();
 	testSub();
 	testNotEqual();
-	testMul();*/
-	testDiv();
+	testMul();
+	testDiv();*/
+	testLeftShift();
+	testRightShift();
 }
 
 void testAdd(){
@@ -533,6 +572,72 @@ void testDiv(){
 		if(result[i] == answer[i]){
 			cout << true;
 		}
+		else{
+			cout << false << " // ";
+			cout << "actual : ";
+			result[i].print();
+			cout << ", expected : ";
+			answer[i].print();
+		}
+		cout << endl;
+	}
+}
+void testLeftShift(){
+	BigInteger num1(14);
+	BigInteger num2(-37);
+	BigInteger num3(0);
+
+	vector<BigInteger> result;
+	result.push_back(num1 << 2);
+	result.push_back(num1 << 0);
+	result.push_back(num2 << 3);
+	result.push_back(num2 << -1);
+	result.push_back(num3 << 3);
+
+	vector<BigInteger> answer;
+	answer.push_back(56);
+	answer.push_back(14);
+	answer.push_back(-296);
+	answer.push_back(-99999);
+	answer.push_back(0);
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]) cout << true;
+		else{
+			cout << false << " // ";
+			cout << "actual : ";
+			result[i].print();
+			cout << ", expected : ";
+			answer[i].print();
+		}
+		cout << endl;
+	}
+}
+void testRightShift(){
+	BigInteger num1(5);
+	BigInteger num2(-74);
+	BigInteger num3(0);
+	BigInteger num4(-4);
+
+	vector<BigInteger> result;
+	result.push_back(num1 >> 2);
+	result.push_back(num2 >> 3);
+	result.push_back(num2 >> -3);
+	result.push_back(num2 >> 0);
+	result.push_back(num3 >> 1);
+	result.push_back(num4 >> 4);
+
+	vector<BigInteger> answer;
+	answer.push_back(1);
+	answer.push_back(-10);
+	answer.push_back(-99999);
+	answer.push_back(-74);
+	answer.push_back(0);
+	answer.push_back(-1);
+
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]) cout << true;
 		else{
 			cout << false << " // ";
 			cout << "actual : ";
