@@ -275,6 +275,11 @@ public :
 		return true;
 	}
 
+	friend bool operator^(const BigInteger& n1, const BigInteger& n2){
+		if((n1 == 0 && n2 == 0) || (n1 != 0 && n2 != 0)) return false;
+		return true;
+	}
+
 	const BigInteger getAbs() const{
 		BigInteger result(*this);
 		result.isPositive = true;
@@ -301,6 +306,7 @@ void testRightShift();
 void testMod();
 void testAndLogic();
 void testOrLogic();
+void testXorLogic();
 
 int main() {
 	testAdd();
@@ -317,6 +323,7 @@ int main() {
 	testMod();
 	testAndLogic();
 	testOrLogic();
+	testXorLogic();
 }
 
 void testAdd(){
@@ -771,6 +778,37 @@ void testOrLogic(){
 	answer.push_back(false);
 	answer.push_back(true);
 
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]) cout << true;
+		else{
+			cout << false << " // ";
+			cout << "actual : " << result[i];
+			cout << ", expected : " << answer[i];
+		}
+		cout << endl;
+	}
+}
+void testXorLogic(){
+	BigInteger num1(23);
+	BigInteger num2(34);
+	BigInteger num3(0);
+	BigInteger num4(0);
+	BigInteger num5(-5);
+
+	vector<bool> result;
+	result.push_back(num1 ^ num2);
+	result.push_back(num2 ^ num3);
+	result.push_back(num3 ^ num1);
+	result.push_back(num3 ^ num4);
+	result.push_back(num2 ^ num5);
+
+	vector<bool> answer;
+	answer.push_back(false);
+	answer.push_back(true);
+	answer.push_back(true);
+	answer.push_back(false);
+	answer.push_back(false);
 
 	for(size_t i=0; i<result.size(); i++){
 		if(result[i] == answer[i]) cout << true;
