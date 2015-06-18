@@ -281,62 +281,65 @@ public :
 	}
 
 	friend const BigInteger operator&(const BigInteger& n1, const BigInteger& n2){
-		BigInteger result, n1_binary(n1), n2_binary(n2);
-
-		n1_binary = n1_binary.convertToBinary();
-		n2_binary = n2_binary.convertToBinary();
-		
-		for(size_t i=0; i<min(n1_binary.num.size(), n2_binary.num.size()); i++){
-			result.num.push_back(n1_binary.get(i) & n2_binary.get(i));
-		}
-		
-		if(n1_binary.num.size() < n2_binary.num.size()){
-			if(!n1.isPositive){
-				for(size_t i=n1_binary.num.size(); i<n2_binary.num.size(); i++){
-					result.num.push_back(n2_binary.get(i));
-				}
-			}
-		}
-		else{
-			if(!n2.isPositive){
-				for(size_t i=n2_binary.num.size(); i<n1_binary.num.size(); i++){
-					result.num.push_back(n1_binary.get(i));
-				}
-			}
-		}
-
-		if(!n1.isPositive && !n2.isPositive) result.isPositive = false;
-		
-		result = result.convertToDecimal();
+		BigInteger result = n1.innerBitwise(n2, '&');
 		return result;
 	}
 
 	friend const BigInteger operator|(const BigInteger& n1, const BigInteger& n2){
-		BigInteger result, n1_binary(n1), n2_binary(n2);
+		BigInteger result = n1.innerBitwise(n2, '|');
+		return result;
+	}
+
+	const BigInteger innerBitwise(const BigInteger& other, char op) const{
+		BigInteger result, n1_binary(*this), n2_binary(other);
 
 		n1_binary = n1_binary.convertToBinary();
 		n2_binary = n2_binary.convertToBinary();
 		
 		for(size_t i=0; i<min(n1_binary.num.size(), n2_binary.num.size()); i++){
-			result.num.push_back(n1_binary.get(i) | n2_binary.get(i));
+			if(op == '&')
+				result.num.push_back(n1_binary.get(i) & n2_binary.get(i));
+			else if(op == '|')
+				result.num.push_back(n1_binary.get(i) | n2_binary.get(i));
+			else{
+				cout << "Not Define Operator" << endl;
+				exit(1);
+			}
 		}
 		
 		if(n1_binary.num.size() < n2_binary.num.size()){
-			if(n1.isPositive){
+			if(op == '&' && !this->isPositive){
+				for(size_t i=n1_binary.num.size(); i<n2_binary.num.size(); i++){
+					result.num.push_back(n2_binary.get(i));
+				}
+			}
+			else if(op == '|' && this->isPositive){
 				for(size_t i=n1_binary.num.size(); i<n2_binary.num.size(); i++){
 					result.num.push_back(n2_binary.get(i));
 				}
 			}
 		}
 		else{
-			if(n2.isPositive){
+			if(op == '&' && !other.isPositive){
+				for(size_t i=n2_binary.num.size(); i<n1_binary.num.size(); i++){
+					result.num.push_back(n1_binary.get(i));
+				}
+			}
+			else if(op == '|' && other.isPositive){
 				for(size_t i=n2_binary.num.size(); i<n1_binary.num.size(); i++){
 					result.num.push_back(n1_binary.get(i));
 				}
 			}
 		}
 
-		if(!n1.isPositive || !n2.isPositive) result.isPositive = false;
+		if(op == '&'){
+			if(!this->isPositive && !other.isPositive)
+				result.isPositive = false;
+		}
+		else if(op == '|'){
+			if(!this->isPositive || !other.isPositive)
+				result.isPositive = false;
+		}
 
 		result = result.convertToDecimal();
 		return result;
