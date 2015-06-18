@@ -45,7 +45,7 @@ public :
 		}
 
 		int carry = 0;
-		for(int i=0; i < max(first.num.size(), second.num.size()); ++i) {
+		for(size_t i=0; i < max(first.num.size(), second.num.size()); i++) {
 			int calc = first.get(i) + second.get(i) + carry;
 			result.num.push_back(calc % 10);
 			carry = calc / 10;
@@ -76,7 +76,7 @@ public :
 		}
 
 		int carry = 0;
-		for(int i=0; i < max(first.num.size(), second.num.size()); ++i) {
+		for(size_t i=0; i < max(first.num.size(), second.num.size()); ++i) {
 			int calc = first.get(i) - second.get(i) + carry;
 			carry = 0;
 			if(calc < 0){
@@ -89,7 +89,7 @@ public :
 			result.num.push_back(carry);
 
 
-		for(int i=result.num.size()-1; !result.num[i] && i>0; i--){
+		for(size_t i=result.num.size()-1; !result.num[i] && i>0; i--){
 			result.num.pop_back();
 		}
 
@@ -113,9 +113,9 @@ public :
 		BigInteger result;
 
 		int carry = 0;
-		for(int i=0; i<n2.num.size(); i++){
+		for(size_t i=0; i<n2.num.size(); i++){
 			carry = 0;
-			for(int j=0; j<n1.num.size(); j++){
+			for(size_t j=0; j<n1.num.size(); j++){
 				int calc = n2.get(i) * n1.get(j) + carry;
 				carry = calc / 10;
 				if(i+j >= result.num.size()){
@@ -133,7 +133,7 @@ public :
 				result.num.push_back(carry);
 		}
 
-		for(int i=result.num.size()-1; !result.num[i] && i>0; i--){
+		for(size_t i=result.num.size()-1; !result.num[i] && i>0; i--){
 			result.num.pop_back();
 		}
 
@@ -280,6 +280,96 @@ public :
 		return true;
 	}
 
+	friend const BigInteger operator&(const BigInteger& n1, const BigInteger& n2){
+		BigInteger result, n1_binary(n1), n2_binary(n2);
+
+		n1_binary = n1_binary.convertToBinary();
+		n2_binary = n2_binary.convertToBinary();
+		
+		for(size_t i=0; i<min(n1_binary.num.size(), n2_binary.num.size()); i++){
+			result.num.push_back(n1_binary.get(i) & n2_binary.get(i));
+		}
+		
+		if(n1_binary.num.size() < n2_binary.num.size()){
+			if(!n1.isPositive){
+				for(size_t i=n1_binary.num.size(); i<n2_binary.num.size(); i++){
+					result.num.push_back(n2_binary.get(i));
+				}
+			}
+		}
+		else{
+			if(!n2.isPositive){
+				for(size_t i=n2_binary.num.size(); i<n1_binary.num.size(); i++){
+					result.num.push_back(n1_binary.get(i));
+				}
+			}
+		}
+
+		if(!n1.isPositive && !n2.isPositive) result.isPositive = false;
+		
+		result = result.convertToDecimal();
+		return result;
+	}
+
+	friend const BigInteger operator|(const BigInteger& n1, const BigInteger& n2){
+		BigInteger result, n1_binary(n1), n2_binary(n2);
+
+		n1_binary = n1_binary.convertToBinary();
+		n2_binary = n2_binary.convertToBinary();
+		
+		for(size_t i=0; i<min(n1_binary.num.size(), n2_binary.num.size()); i++){
+			result.num.push_back(n1_binary.get(i) | n2_binary.get(i));
+		}
+		
+		if(n1_binary.num.size() < n2_binary.num.size()){
+			if(n1.isPositive){
+				for(size_t i=n1_binary.num.size(); i<n2_binary.num.size(); i++){
+					result.num.push_back(n2_binary.get(i));
+				}
+			}
+		}
+		else{
+			if(n2.isPositive){
+				for(size_t i=n2_binary.num.size(); i<n1_binary.num.size(); i++){
+					result.num.push_back(n1_binary.get(i));
+				}
+			}
+		}
+
+		if(!n1.isPositive || !n2.isPositive) result.isPositive = false;
+
+		result = result.convertToDecimal();
+		return result;
+	}
+
+	const BigInteger convertToBinary(){
+		BigInteger result;
+
+		while(1){
+			int calc = this->get(0) % 2;
+			result.num.push_back(calc);
+			*this = *this >> 1;
+			if(*this == 0 || *this == -1) break;
+		}
+
+		return result;
+	}
+
+	const BigInteger convertToDecimal(){
+		BigInteger result(0), digit = 1;
+		
+		for(size_t i=0; i<num.size(); i++){
+			result = result + num[i] * digit;
+			digit = digit * 2;
+		}
+
+		if(!isPositive){
+			result = result - digit;
+		}
+
+		return result;
+	}
+
 	const BigInteger getAbs() const{
 		BigInteger result(*this);
 		result.isPositive = true;
@@ -307,9 +397,11 @@ void testMod();
 void testAndLogic();
 void testOrLogic();
 void testXorLogic();
+void testAndBitwise();
+void testOrBitWise();
 
 int main() {
-	testAdd();
+	/*testAdd();
 	testLeftGreater();
 	testLeftGreaterEqual();
 	testRightGreater();
@@ -323,7 +415,9 @@ int main() {
 	testMod();
 	testAndLogic();
 	testOrLogic();
-	testXorLogic();
+	testXorLogic();*/
+	testAndBitwise();
+	testOrBitWise();
 }
 
 void testAdd(){
@@ -816,6 +910,100 @@ void testXorLogic(){
 			cout << false << " // ";
 			cout << "actual : " << result[i];
 			cout << ", expected : " << answer[i];
+		}
+		cout << endl;
+	}
+}
+void testAndBitwise(){
+	BigInteger num1(5);
+	BigInteger num2(6);
+	BigInteger num3(25);
+	BigInteger num4(39);
+	BigInteger num5(-13);
+	BigInteger num6(13);
+	BigInteger num7(-39);
+	BigInteger num8(0);
+	BigInteger num9(134);
+	BigInteger num10(-1);
+	BigInteger num11(1);
+
+	vector<BigInteger> result;
+	result.push_back(num1 & num2);
+	result.push_back(num3 & num4);
+	result.push_back(num5 & num4);
+	result.push_back(num6 & num7);
+	result.push_back(num5 & num7);
+	result.push_back(num8 & num9);
+	result.push_back(num9 & num10);
+	result.push_back(num10 & num7);
+	result.push_back(num9 & num11);
+
+	vector<BigInteger> answer;
+	answer.push_back(4);
+	answer.push_back(1);
+	answer.push_back(35);
+	answer.push_back(9);
+	answer.push_back(-47);
+	answer.push_back(0);
+	answer.push_back(134);
+	answer.push_back(-39);
+	answer.push_back(0);
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]) cout << true;
+		else{
+			cout << false << " // ";
+			cout << "actual : ";
+			result[i].print();
+			cout << ", expected : ";
+			answer[i].print();
+		}
+		cout << endl;
+	}
+}
+void testOrBitWise(){
+	BigInteger num1(5);
+	BigInteger num2(6);
+	BigInteger num3(25);
+	BigInteger num4(39);
+	BigInteger num5(-13);
+	BigInteger num6(13);
+	BigInteger num7(-39);
+	BigInteger num8(0);
+	BigInteger num9(134);
+	BigInteger num10(-1);
+	BigInteger num11(1);
+
+	vector<BigInteger> result;
+	result.push_back(num1 | num2);
+	result.push_back(num3 | num4);
+	result.push_back(num5 | num4);
+	result.push_back(num6 | num7);
+	result.push_back(num5 | num7);
+	result.push_back(num8 | num9);
+	result.push_back(num9 | num10);
+	result.push_back(num10 | num7);
+	result.push_back(num9 | num11);
+
+	vector<BigInteger> answer;
+	answer.push_back(7);
+	answer.push_back(63);
+	answer.push_back(-9);
+	answer.push_back(-35);
+	answer.push_back(-5);
+	answer.push_back(134);
+	answer.push_back(-1);
+	answer.push_back(-1);
+	answer.push_back(135);
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]) cout << true;
+		else{
+			cout << false << " // ";
+			cout << "actual : ";
+			result[i].print();
+			cout << ", expected : ";
+			answer[i].print();
 		}
 		cout << endl;
 	}
