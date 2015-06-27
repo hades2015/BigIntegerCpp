@@ -275,11 +275,6 @@ public :
 		return true;
 	}
 
-	friend bool operator^(const BigInteger& n1, const BigInteger& n2){
-		if((n1 == 0 && n2 == 0) || (n1 != 0 && n2 != 0)) return false;
-		return true;
-	}
-
 	friend const BigInteger operator&(const BigInteger& n1, const BigInteger& n2){
 		BigInteger result = n1.innerBitwise(n2, '&');
 		return result;
@@ -290,9 +285,14 @@ public :
 		return result;
 	}
 
+	friend const BigInteger operator^(const BigInteger& n1, const BigInteger& n2){
+		BigInteger result = n1.innerBitwise(n2, '^');
+		return result;
+	}
+
 	const BigInteger innerBitwise(const BigInteger& other, char op) const{
 		BigInteger result, n1_binary(*this), n2_binary(other);
-
+		
 		n1_binary = n1_binary.convertToBinary();
 		n2_binary = n2_binary.convertToBinary();
 		
@@ -301,6 +301,8 @@ public :
 				result.num.push_back(n1_binary.get(i) & n2_binary.get(i));
 			else if(op == '|')
 				result.num.push_back(n1_binary.get(i) | n2_binary.get(i));
+			else if(op == '^')
+				result.num.push_back(n1_binary.get(i) ^ n2_binary.get(i));
 			else{
 				cout << "Not Define Operator" << endl;
 				exit(1);
@@ -318,8 +320,15 @@ public :
 					result.num.push_back(n2_binary.get(i));
 				}
 			}
+			else if(op == '^'){
+				for(size_t i=n1_binary.num.size(); i<n2_binary.num.size(); i++){
+					int bit = n2_binary.get(i);
+					if(!this->isPositive) bit = !bit;
+					result.num.push_back(bit);
+				}
+			}
 		}
-		else{
+		else if(n1_binary.num.size() > n2_binary.num.size()){
 			if(op == '&' && !other.isPositive){
 				for(size_t i=n2_binary.num.size(); i<n1_binary.num.size(); i++){
 					result.num.push_back(n1_binary.get(i));
@@ -330,8 +339,15 @@ public :
 					result.num.push_back(n1_binary.get(i));
 				}
 			}
+			else if(op == '^'){
+				for(size_t i=n2_binary.num.size(); i<n1_binary.num.size(); i++){
+					int bit = n1_binary.get(i);
+					if(!other.isPositive) bit = !bit;
+					result.num.push_back(bit);
+				}
+			}
 		}
-
+		
 		if(op == '&'){
 			if(!this->isPositive && !other.isPositive)
 				result.isPositive = false;
@@ -340,7 +356,11 @@ public :
 			if(!this->isPositive || !other.isPositive)
 				result.isPositive = false;
 		}
-
+		else if(op == '^'){
+			if(this->isPositive != other.isPositive)
+				result.isPositive = false;
+		}
+		
 		result = result.convertToDecimal();
 		return result;
 	}
@@ -354,7 +374,7 @@ public :
 			*this = *this >> 1;
 			if(*this == 0 || *this == -1) break;
 		}
-
+		
 		return result;
 	}
 
@@ -362,7 +382,7 @@ public :
 		BigInteger result(0), digit = 1;
 		
 		for(size_t i=0; i<num.size(); i++){
-			result = result + num[i] * digit;
+			result = result + get(i) * digit;
 			digit = digit * 2;
 		}
 
@@ -378,6 +398,16 @@ public :
 		result.isPositive = true;
 
 		return result;
+	}
+
+	friend ostream& operator<<(ostream& os, const BigInteger& val)
+	{ 
+		if(!val.isPositive) os << "-";
+		for(int i=val.num.size()-1; i>=0; --i){
+				os << val.num[i];
+		}
+
+		return os;
 	}
 
 private :
@@ -399,12 +429,12 @@ void testRightShift();
 void testMod();
 void testAndLogic();
 void testOrLogic();
-void testXorLogic();
 void testAndBitwise();
 void testOrBitWise();
+void testXorBitwise();
 
 int main() {
-	/*testAdd();
+	testAdd();
 	testLeftGreater();
 	testLeftGreaterEqual();
 	testRightGreater();
@@ -418,9 +448,10 @@ int main() {
 	testMod();
 	testAndLogic();
 	testOrLogic();
-	testXorLogic();*/
 	testAndBitwise();
 	testOrBitWise();
+	testXorBitwise();
+
 }
 
 void testAdd(){
@@ -725,6 +756,8 @@ void testLeftShift(){
 	BigInteger num1(14);
 	BigInteger num2(-37);
 	BigInteger num3(0);
+	BigInteger num4(34);
+	BigInteger num5(3);
 
 	vector<BigInteger> result;
 	result.push_back(num1 << 2);
@@ -732,6 +765,7 @@ void testLeftShift(){
 	result.push_back(num2 << 3);
 	result.push_back(num2 << -1);
 	result.push_back(num3 << 3);
+	result.push_back(num4 << num5);
 
 	vector<BigInteger> answer;
 	answer.push_back(56);
@@ -739,6 +773,7 @@ void testLeftShift(){
 	answer.push_back(-296);
 	answer.push_back(-99999);
 	answer.push_back(0);
+	answer.push_back(272);
 
 	for(size_t i=0; i<result.size(); i++){
 		if(result[i] == answer[i]) cout << true;
@@ -757,6 +792,8 @@ void testRightShift(){
 	BigInteger num2(-74);
 	BigInteger num3(0);
 	BigInteger num4(-4);
+	BigInteger num5(34);
+	BigInteger num6(3);
 
 	vector<BigInteger> result;
 	result.push_back(num1 >> 2);
@@ -765,6 +802,7 @@ void testRightShift(){
 	result.push_back(num2 >> 0);
 	result.push_back(num3 >> 1);
 	result.push_back(num4 >> 4);
+	result.push_back(num5 >> num6);
 
 	vector<BigInteger> answer;
 	answer.push_back(1);
@@ -773,6 +811,7 @@ void testRightShift(){
 	answer.push_back(-74);
 	answer.push_back(0);
 	answer.push_back(-1);
+	answer.push_back(4);
 
 
 	for(size_t i=0; i<result.size(); i++){
@@ -886,37 +925,6 @@ void testOrLogic(){
 		cout << endl;
 	}
 }
-void testXorLogic(){
-	BigInteger num1(23);
-	BigInteger num2(34);
-	BigInteger num3(0);
-	BigInteger num4(0);
-	BigInteger num5(-5);
-
-	vector<bool> result;
-	result.push_back(num1 ^ num2);
-	result.push_back(num2 ^ num3);
-	result.push_back(num3 ^ num1);
-	result.push_back(num3 ^ num4);
-	result.push_back(num2 ^ num5);
-
-	vector<bool> answer;
-	answer.push_back(false);
-	answer.push_back(true);
-	answer.push_back(true);
-	answer.push_back(false);
-	answer.push_back(false);
-
-	for(size_t i=0; i<result.size(); i++){
-		if(result[i] == answer[i]) cout << true;
-		else{
-			cout << false << " // ";
-			cout << "actual : " << result[i];
-			cout << ", expected : " << answer[i];
-		}
-		cout << endl;
-	}
-}
 void testAndBitwise(){
 	BigInteger num1(5);
 	BigInteger num2(6);
@@ -1007,6 +1015,52 @@ void testOrBitWise(){
 			result[i].print();
 			cout << ", expected : ";
 			answer[i].print();
+		}
+		cout << endl;
+	}
+}
+void testXorBitwise(){
+	BigInteger num1(5);
+	BigInteger num2(6);
+	BigInteger num3(25);
+	BigInteger num4(39);
+	BigInteger num5(-13);
+	BigInteger num6(13);
+	BigInteger num7(-39);
+	BigInteger num8(0);
+	BigInteger num9(134);
+	BigInteger num10(-1);
+	BigInteger num11(1);
+
+	vector<BigInteger> result;
+	result.push_back(num1 ^ num2);
+	result.push_back(num3 ^ num4);
+	result.push_back(num5 ^ num4); 
+	result.push_back(num6 ^ num7);
+	result.push_back(num5 ^ num7);
+	result.push_back(num8 ^ num9);
+	result.push_back(num9 ^ num10);
+	result.push_back(num10 ^ num7);
+	result.push_back(num9 ^ num11);
+
+	vector<BigInteger> answer;
+	answer.push_back(3);
+	answer.push_back(62);
+	answer.push_back(-44);
+	answer.push_back(-44);
+	answer.push_back(42);
+	answer.push_back(134);
+	answer.push_back(-135);
+	answer.push_back(38);
+	answer.push_back(135);
+	
+
+	for(size_t i=0; i<result.size(); i++){
+		if(result[i] == answer[i]) cout << true;
+		else{
+			cout << false << " // ";
+			cout << "actual : " << result[i];
+			cout << ", expected : " << answer[i];
 		}
 		cout << endl;
 	}
